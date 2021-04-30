@@ -13,17 +13,18 @@ ui <- fluidPage(
   # Sidebar with buttons
   sidebarLayout(
   sidebarPanel("MySidebar",
-                 h3("a button"),
-               # Submit button
-                 actionButton(inputId="my_submitstatus",
-                              label="Submit"),
                # Checkboxes - radioButtons
                  radioButtons(inputId = "my_checkgroup", 
                                     h3("Select a habitat"), 
                                     choices = list("Woodland" = 1, 
                                                    "Grassland" = 2, 
                                                    "Urban" = 3),
-                                    selected = 1)
+                                    selected = 1),
+               sliderInput(inputId = "bins",
+                           h3("Number of bins"),
+                           min = 4, 
+                           max = 50,
+                           value = 8)
     ),  
   
   # Main panel with text and images
@@ -43,10 +44,17 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   # creating a histogram
-  output$habitats_plot <- renderPlot(
+  output$habitats_plot <- renderPlot({
+    
+    # Generate bins from UI
+    bins <- seq(min(habitats), max(habitats), length.out = input$bins + 1)
     # Output depends on which radioButton is selected
-    hist(habitats[, as.numeric(input$my_checkgroup)])
-  )
+    hist(habitats[, as.numeric(input$my_checkgroup)], breaks = bins,
+         main = "Habitat histogram",
+         xlab = "Edited x label",
+         ylab = "Edited y label",
+         col = "red", border = NULL)
+  })
 }
 
 # Run the app ####
