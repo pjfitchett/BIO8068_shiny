@@ -56,3 +56,89 @@ leaflet() %>%
                    label="Newcastle population 270k",
                    labelOptions = labelOptions(textsize = "25px"))
 
+# Vector maps and leaflet ####
+
+library(sf)
+
+# st_read part of sf package 
+nafferton_fields <- st_read("www/naff_fields/naff_fields.shp")
+# data originally from GRASS GIS 
+st_crs(nafferton_fields) # show projection system
+# DATUM is OSGB 1936 but ESPG is not the usual 27700 - to be transformed
+
+# First reset nafferton fields to OS 27700
+nafferton_fields <- nafferton_fields %>% 
+  st_set_crs(27700) %>% 
+  st_transform(27700)
+
+# Transform to latitude longitude
+nafferton_fields_ll <- st_transform(nafferton_fields, 4326) # Lat-Lon
+
+# Can plot the data directly with plot()
+plot(nafferton_fields)
+# Plot a single map
+plot(nafferton_fields[, 1])
+
+# Displaying the map in leaflet using latlong
+leaflet() %>% 
+  addProviderTiles(providers$Esri.WorldImagery) %>% 
+  addFeatures(nafferton_fields_ll)
+# Can zoom and pan with this map
+
+# Displaying subsets of vector data
+leaflet() %>% 
+  addProviderTiles(providers$Esri.WorldImagery) %>% 
+  addFeatures(nafferton_fields_ll[nafferton_fields_ll$Farm_Meth=="Organic",],
+              fillColor = "blue",  
+              color = "white",
+              opacity = 0.7,
+              fillOpacity = 0.4) %>%
+  addFeatures(nafferton_fields_ll[nafferton_fields_ll$Farm_Meth=="Conventional",],
+              fillColor = "red",
+              color = "white",
+              opacity = 0.7,
+              fillOpacity = 0.4)
+
+# Continuous colour options
+
+# Need to decide how to split the continuous variable up into categorical "bins"
+# Then use colorBin to apply a colour pallette
+
+summary(nafferton_fields)
+# Area varies from 12189 to 200919
+hist(nafferton_fields$Area_m) # basic histogram
+
+library(ggplot2)
+ggplot(nafferton_fields) +
+  geom_histogram(aes(Area_m),
+                 binwidth = 25000,
+                 color = "blue",
+                 fill = "blue") +
+  labs(x = "Area", y = "Number")
+
+# Colouring the continuous variable on the map
+
+# Set the bins to divide up your areas
+bins <- c(0, 25000, 50000, 75000, 100000, 125000, 150000, 175000, 200000, 225000)
+
+# Decide on the colour palatte
+pal <- colorBin(palette = "Greens", domain = bins)
+
+# Create the map
+leaflet() %>% 
+  addProviderTiles(providers$Esri.WorldImagery) %>% 
+  addFeatures(nafferton_fields_ll,
+              fillColor = ~pal(nafferton_fields_ll$Area_m),
+              fillOpacity = 1)
+
+pal2 <- colorQuantile(palette = "Greens", domain = bins, n = 6)
+
+leaflet() %>%
+  addProviderTiles(providers$Esri.WorldImagery) %>%
+  addFeatures(nafferton_fields_ll,
+              fillColor = ~pal2(nafferton_fields_ll$Area_m),
+              fillOpacity = 1)
+
+
+
+
