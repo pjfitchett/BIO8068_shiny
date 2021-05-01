@@ -140,5 +140,66 @@ leaflet() %>%
               fillOpacity = 1)
 
 
+pal <- colorNumeric(palette = "Greens", domain = bins)
 
+# Now leaflet is called with nafferton_fields_ll
+leaflet(nafferton_fields_ll) %>% 
+  addProviderTiles(providers$Esri.WorldImagery) %>% 
+  addFeatures(fillColor = ~pal(Area_m),
+              fillOpacity = 1) %>% 
+  addLegend("bottomright",
+            pal = pal,
+            values = ~Area_m,
+            title = "Field area",
+            labFormat = labelFormat(suffix = " m^2"),
+            opacity = 1)
+
+# Highlight and popups ####
+
+# Individual polygons can be highlighted by mousing over them
+leaflet(nafferton_fields_ll) %>% 
+  addProviderTiles(providers$Esri.WorldImagery) %>% 
+  addFeatures(fillColor = ~pal(Area_m),
+              fillOpacity = 1,
+              # Add the highlight option
+              highlightOptions = highlightOptions(color = "yellow",
+                                                  weight = 5,
+                                                  bringToFront = TRUE)) %>% 
+  addLegend("bottomright",
+            pal = pal,
+            values = ~Area_m,
+            title = "Field area",
+            labFormat = labelFormat(suffix = " m^2"),
+            opacity = 1)
+
+# Can add a popup to display additional info 
+field_info <- paste("Method: ", nafferton_fields_ll$Farm_Meth,
+                    "<br>",
+                    "Crop: ", nafferton_fields_ll$Crop_2010)
+
+# Add popup to map
+
+
+# Interactive control of foreground and background maps ####
+
+# Gives the user the choice of Open StreetMap or satellite
+leaflet() %>% 
+  addTiles(group = "OSM (default)") %>% 
+  addProviderTiles(providers$Esri.WorldImagery,
+                   group = "Satellite") %>% 
+  addLayersControl( # choice is here
+    baseGroups = c("OSM (default)", "Satellite")
+  ) %>% # add the focus to NE England
+  setView(lat = 54.9857, lng=-1.8990, zoom=10)
+
+# Add the overlay map for Nafferton farm
+leaflet() %>% 
+  addTiles(group = "OSM (default)") %>% 
+  addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>% 
+  addFeatures(nafferton_fields_ll, group = "Nafferton Farm") %>% 
+  addLayersControl(
+    baseGroups = c("OSM (default)", "Satellite"), 
+    overlayGroups = "Nafferton Farm", # can select/unselect this layer
+    options = layersControlOptions(collapsed = FALSE)
+  )
 
