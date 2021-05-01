@@ -131,7 +131,7 @@ leaflet() %>%
               fillColor = ~pal(nafferton_fields_ll$Area_m),
               fillOpacity = 1)
 
-pal2 <- colorQuantile(palette = "Greens", domain = bins, n = 6)
+pal2 <- colorQuantile(palette = "Greens", domain = nafferton_fields_ll$Area_m, n = 6)
 
 leaflet() %>%
   addProviderTiles(providers$Esri.WorldImagery) %>%
@@ -179,6 +179,22 @@ field_info <- paste("Method: ", nafferton_fields_ll$Farm_Meth,
 
 # Add popup to map
 
+leaflet(nafferton_fields_ll) %>% 
+  addProviderTiles(providers$Esri.WorldImagery) %>% 
+  addFeatures(fillColor = ~pal(Area_m),
+              fillOpacity = 1,
+              # Add the highlight option
+              highlightOptions = highlightOptions(color = "yellow",
+                                                  weight = 5,
+                                                  bringToFront = TRUE),
+              # Add the popups
+              popup = field_info) %>% 
+  addLegend("bottomright",
+            pal = pal,
+            values = ~Area_m,
+            title = "Field area",
+            labFormat = labelFormat(suffix = " m^2"),
+            opacity = 1)
 
 # Interactive control of foreground and background maps ####
 
@@ -202,4 +218,19 @@ leaflet() %>%
     overlayGroups = "Nafferton Farm", # can select/unselect this layer
     options = layersControlOptions(collapsed = FALSE)
   )
+
+# Choose whether to display organic or conventional
+
+leaflet() %>% 
+  addTiles(group = "OSM (default)") %>% 
+  addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>% 
+  addFeatures(nafferton_fields_ll, group = c("Organic", "Conventional")) %>% 
+  addLayersControl(
+    baseGroups = c("OSM (default)", "Satellite"), 
+    overlayGroups = c("Organic", "Conventional"), # can select/unselect this layer
+    options = layersControlOptions(collapsed = FALSE)
+  )
+
+
+
 
