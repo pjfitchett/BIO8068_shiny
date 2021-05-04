@@ -8,3 +8,6 @@ www
 
 # GIS data folder
 gis_data
+
+# Shiny_LOS folder
+shiny_LOS
