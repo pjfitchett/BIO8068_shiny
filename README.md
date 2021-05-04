@@ -1,2 +1,2 @@
 # BIO8068_shiny
-Practicals using shinyApp
+Practicals using shinyApp including GIS practicals
